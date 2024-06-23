@@ -1,0 +1,57 @@
+---
+- name: Install Jenkins on slave machine
+  hosts: localhost
+  become: yes
+  become_user: ansible
+  tasks:
+    - name: Install ansible if not present
+      yum:
+        name: ansible
+        state: present
+   
+    - name: Downloading the package
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+        mode: '777'
+
+    - name: Add Jenkins repository
+      yum_repository:
+        name: jenkins
+        description: Jenkins YUM repository
+        baseurl: http://pkg.jenkins.io/redhat-stable
+        gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        enabled: yes
+        gpgcheck: yes
+
+    - name: Install java-17-amazon-corretto
+      dnf:
+        name: java-17-amazon-corretto
+        state: present
+
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Ensure Maven is installed
+      ansible.builtin.package:
+        name: maven
+        state: present
+
+    - name: Ensure changing the port number 
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/jenkins.service
+        regexp: '^Environment='
+        line: Environment="JENKINS_PORT=8090"
+        
+    - name: Start and enable Jenkins service
+      service:
+        name: jenkins
+        state: restarted
+        enabled: yes
+  handlers:
+    - name: Restart jenkins
+      ansible.builtin.service:
+        name: jenkins
+        state: restarted
