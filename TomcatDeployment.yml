@@ -1,6 +1,5 @@
  - name : Deploying application in tomcat server
-   hosts: localhost
-   become_user: root
+   hosts: jenkins
    become: yes
    tasks:
     - name: updating the repo
@@ -16,17 +15,17 @@
         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.90/bin/apache-tomcat-9.0.90.tar.gz
         dest: /opt/apache-tomcat-9.0.90.tar.gz
         mode: '777'
-    - name: Unziping the tomcat file 
+    - name: Unziping the tomcat file
       ansible.builtin.unarchive:
         src: /opt/apache-tomcat-9.0.90.tar.gz
         dest: /opt/
         remote_src: yes
     - name: starting the tomcat application
       ansible.builtin.shell: nohup /opt/apache-tomcat-9.0.90/bin/startup.sh &
-    
-    - name: copying file from master to slave for deployment 
+
+    - name: copying file from master to slave for deployment
       copy:
-        src: /home/ansible/SampleWebApp.war
+        src: /etc/ansible/SampleWebApp.war
         dest: /opt/apache-tomcat-9.0.90/webapps
         mode: '777'
     - name: stopping the tomcat application
